@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>💜 Minhas Finanças</h1>
+
+    <form method="post">
+        <input name="descricao" placeholder="Descrição" required>
+        <input name="valor" type="number" step="0.01" required>
+
+        <select name="tipo">
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+        </select>
+
+        <button>Adicionar</button>
+    </form>
+
+    <h2>Saldo: R$ {{ total }}</h2>
+
+    <canvas id="grafico"></canvas>
+
+    <ul>
+        {% for t in transacoes %}
+            <li style="color: {{ 'green' if t[3] > 0 else 'red' }}">
+                            {{ t[2] }} - R$ {{ t[3] }} </li>
+        {% endfor %}
+    </ul>
+
+    <a href="/logout">Sair</a>
+</div>
+
+<script>
+const ctx = document.getElementById('grafico');
+
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Receitas', 'Despesas'],
+        datasets: [{
+            data: [{{ receitas }}, {{ despesas }}]
+        }]
+    }
+});
+</script>
+canvas {
+    margin-top: 20px;
+}
+</body>
+</html>
