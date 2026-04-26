@@ -155,11 +155,13 @@ def logout():
     return redirect('/')
 
 
+# ROTA TESTE (AGORA CORRETA)
+@app.route('/teste')
+def teste():
+    return "Funcionando!"
+
+
 # RODAR LOCAL + ONLINE
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
-
-    @app.route('/teste')
-def teste():
-    return "Funcionando!"
+    app.run(host='0.0.0.0', port=port)
