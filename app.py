@@ -5,7 +5,9 @@ from collections import defaultdict
 import os
 
 app = Flask(__name__)
-app.secret_key = '123'
+
+# 🔒 SECRET KEY segura (funciona no Render)
+app.secret_key = os.environ.get('SECRET_KEY', 'chave_super_segura_123')
 
 # conexão com banco
 conn = sqlite3.connect('dados.db', check_same_thread=False)
@@ -33,24 +35,12 @@ CREATE TABLE IF NOT EXISTS transacoes (
 
 conn.commit()
 
-# evitar erro se já existir coluna
-try:
-    cursor.execute("ALTER TABLE transacoes ADD COLUMN categoria TEXT")
-except:
-    pass
-
-try:
-    cursor.execute("ALTER TABLE transacoes ADD COLUMN data TEXT")
-except:
-    pass
-
-
 # LOGIN
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        senha = request.form['senha']
+        username = request.form.get('username')
+        senha = request.form.get('senha')
 
         user = cursor.execute(
             "SELECT * FROM usuarios WHERE username=? AND senha=?",
@@ -68,8 +58,8 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        senha = request.form['senha']
+        username = request.form.get('username')
+        senha = request.form.get('senha')
 
         cursor.execute(
             "INSERT INTO usuarios (username, senha) VALUES (?,?)",
@@ -92,10 +82,16 @@ def dashboard():
 
     # salvar nova transação
     if request.method == 'POST':
-        descricao = request.form['descricao']
-        valor = float(request.form['valor'])
-        tipo = request.form['tipo']
-        categoria = request.form['categoria']
+        descricao = request.form.get('descricao')
+        valor = request.form.get('valor')
+        tipo = request.form.get('tipo')
+        categoria = request.form.get('categoria', 'Outros')
+
+        # validação básica
+        if not descricao or not valor:
+            return redirect('/dashboard')
+
+        valor = float(valor)
 
         if tipo == 'despesa':
             valor = -abs(valor)
@@ -155,13 +151,7 @@ def logout():
     return redirect('/')
 
 
-# ROTA TESTE (AGORA CORRETA)
-@app.route('/teste')
-def teste():
-    return "Funcionando!"
-
-
-# RODAR LOCAL + ONLINE
+# RODAR LOCAL + RENDER
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
